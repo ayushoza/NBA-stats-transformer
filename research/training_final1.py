@@ -8,8 +8,13 @@ import ast
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+import joblib
 
 torch.manual_seed(1)
+
+
+## code from "Language Modeling with nn.Transformer and TorchText"
+## https://github.com/pytorch/tutorials/blob/master/beginner_source/transformer_tutorial.py
 
 
 class TransformerModel(nn.Module):
@@ -191,9 +196,13 @@ def train(lr, batch_size, epochs):
     plt.xlabel("Epochs")
     plt.ylabel("MSE Loss")
     plt.savefig("first_vs_second.png")
-    
+
 
 train(lr=0.0005, batch_size=64, epochs=500)
 crit = nn.MSELoss()
 print(crit(test_output, transf_model(
     test_input, torch.zeros([nhead*test_input.size(0), 12, 12]))))
+
+
+joblib.dump(transf_model, "./transformer_model.joblib", compress=True)
+
