@@ -8,6 +8,11 @@ Created on Sun Apr 10 03:18:36 2022
 import joblib
 import pandas as pd
 from nba_api.stats.static import players
+import sys
+sys.path.insert(0, 'NBA-stats-transformer/data_processing/monthly_data.py')
+
+import monthly_data as m
+
 
 class StatsPredictor:
     def __init__(self):
@@ -28,9 +33,12 @@ class StatsPredictor:
         try:
             player = [player for player in self.active_player_dict if 
                       (player['full_name']).lower() == input_name][0]
-            return player['id']
+            player_id = player['id']
         except IndexError:
             print("Player does not exist or is not currently active. Please try another name.")
+        
+        input_stats = ...    
+        
         return 
     
     def predict(self, input_data):
