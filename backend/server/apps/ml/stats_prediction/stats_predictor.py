@@ -7,6 +7,7 @@ Created on Sun Apr 10 03:18:36 2022
 """
 import joblib
 import pandas as pd
+from nba_api.stats.static import players
 
 class StatsPredictor:
     def __init__(self):
@@ -16,13 +17,21 @@ class StatsPredictor:
         """
         path_to_model = ""
         self.model = joblib.load("transformer_model.joblib")
+        self.active_player_dict = players.get_active_players()
         
-    def preprocessing(self, input_data):
+    def preprocessing(self, input_name):
         """
-        Turn JSON to pandas DataFrame and apply preprocessing
+        Apply preprocessing to input data
 
         """
-        pass
+        input_name = input_name.title()
+        try:
+            player = [player for player in self.active_player_dict if 
+                      (player['full_name']).lower() == input_name][0]
+            return player['id']
+        except IndexError:
+            print("Player does not exist or is not currently active. Please try another name.")
+        return 
     
     def predict(self, input_data):
         """
