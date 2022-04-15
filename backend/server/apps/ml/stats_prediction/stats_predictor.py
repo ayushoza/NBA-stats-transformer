@@ -61,7 +61,8 @@ class StatsPredictor:
         Predict stats using the transformer model object
 
         """
-        pass
+        self.model(input_data, torch.zeros(6, 12, 12))
+        ## FIX THIS
     
     def postprocessing(self):
         """
