@@ -1,15 +1,10 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Apr 10 03:18:36 2022
-
-@author: janelle
-"""
-import joblib, time
+import joblib, time, torch
 import numpy as np
 import pandas as pd
 from nba_api.stats.static import players
 from nba_api.stats.endpoints import playergamelog
+import destandardize
+import standardize as s
 
 
 class StatsPredictor:
@@ -22,24 +17,22 @@ class StatsPredictor:
         self.active_player_dict = players.get_active_players()
         self.inputs = []
         self.current_input = None
+        self.seasons = ['2020-21', '2021-22']
         
     def preprocessing(self, input_name):
         """
         Apply preprocessing to input data
 
         """
+        self.inputs.append(input_name)
         input_name = input_name.lower()
         try:
             player = [player for player in self.active_player_dict if 
                       (player['full_name']).lower() == input_name][0]
-            player_id = player['id']
+            self.current_input = player
         except IndexError:
             print("Player does not exist or is not currently active. Please try another name.")
             return
-        
-        input_stats = ... 
-        
-        return 
     
         def game_to_month(player_id, season):
             """
@@ -57,6 +50,11 @@ class StatsPredictor:
             new_df = pd.DataFrame(df_np, columns=('MP','FGM','FGA','FTM','FTA','REB','AST','STL','BLK','TOV','PF','PTS','Month'))
             df = new_df.groupby(['Month'],sort=False).mean(False)
             return df[::-1]
+        
+        input_stats =  torch.tensor(game_to_month(self.current_input['id'], self.seasons[0]).values, 
+                                    game_to_month(self.current_input['id'], self.seasons[1]).values)
+        
+        return s.standardize(input_stats)
     
     def predict(self, input_data):
         """
