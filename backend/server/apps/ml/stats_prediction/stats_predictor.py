@@ -55,15 +55,16 @@ class StatsPredictor:
             new_df = pd.DataFrame(df_np, columns=(
                 'MP', 'FGM', 'FGA', 'FTM', 'FTA', 'REB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', 'Month'))
             df = new_df.groupby(['Month'], sort=False).mean(False)
-            return df[::-1]
+            return df[:6][::-1]
 
         # If player is a rookie, just duplicate this seasons' stats into a second season for simplicity
         if game_to_month(self.current_input['id'], self.seasons[0]).empty:
-            input_stats = torch.cat((game_to_month(self.current_input['id'], self.seasons[1]).values,
-                                     game_to_month(self.current_input['id'], self.seasons[1]).values))
+            season1 = torch.tensor(game_to_month(self.current_input['id'], self.seasons[1]).values)
+            input_stats = torch.cat((season1, season1))
         else:
-            input_stats = torch.cat((game_to_month(self.current_input['id'], self.seasons[0]).values,
-                                     game_to_month(self.current_input['id'], self.seasons[1]).values))
+            season0 = torch.tensor(game_to_month(self.current_input['id'], self.seasons[0]).values)
+            season1 = torch.tensor(game_to_month(self.current_input['id'], self.seasons[1]).values)
+            input_stats = torch.cat((season0, season1))
 
         return s.standardize(input_stats)
 
@@ -72,7 +73,7 @@ class StatsPredictor:
         Predict stats using the transformer model object
 
         """
-        return d.destandardize(self.model(input_data.float(), torch.zeros(72, 12, 12))[-1])
+        return d.destandardize(self.model(torch.unsqueeze(input_data.float(),0), torch.zeros(6, 12, 12))[-1])
         # FIX THIS
 
     def postprocessing(self, output, player_name):
@@ -94,7 +95,9 @@ class StatsPredictor:
         try:
             preprocess = self.preprocessing(input_data)
             pred = self.predict(preprocess)
-            postprocess = self.postprocessing(pred)
+            postprocess = self.postprocessing(pred, input_data)
         except Exception as e:
             return {"status": "Error", "message": str(e)}
         return postprocess
+    
+
