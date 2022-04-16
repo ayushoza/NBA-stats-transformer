@@ -52,8 +52,13 @@ class StatsPredictor:
             df = new_df.groupby(['Month'],sort=False).mean(False)
             return df[::-1]
         
-        input_stats =  torch.tensor(game_to_month(self.current_input['id'], self.seasons[0]).values, 
-                                    game_to_month(self.current_input['id'], self.seasons[1]).values)
+        # If player is a rookie, just duplicate this seasons' stats into a second season for simplicity
+        if game_to_month(self.current_input['id'], self.seasons[0]).empty: 
+            input_stats =  torch.cat((game_to_month(self.current_input['id'], self.seasons[1]).values, 
+                                      game_to_month(self.current_input['id'], self.seasons[1]).values))
+        else:
+            input_stats =  torch.cat((game_to_month(self.current_input['id'], self.seasons[0]).values, 
+                                      game_to_month(self.current_input['id'], self.seasons[1]).values))
         
         return s.standardize(input_stats)
     
@@ -62,7 +67,7 @@ class StatsPredictor:
         Predict stats using the transformer model object
 
         """
-        return d.destandardize(self.model(input_data, torch.zeros(72, 12, 12))[-1])
+        return d.destandardize(self.model(input_data.float(), torch.zeros(72, 12, 12))[-1])
         ## FIX THIS
     
     def postprocessing(self, output, player_name):
