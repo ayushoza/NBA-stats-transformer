@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from nba_api.stats.static import players
 from nba_api.stats.endpoints import playergamelog
-import destandardize
+import destandardize as d
 import standardize as s
 
 
@@ -18,6 +18,7 @@ class StatsPredictor:
         self.inputs = []
         self.current_input = None
         self.seasons = ['2020-21', '2021-22']
+        self.prediction = {}
         
     def preprocessing(self, input_name):
         """
@@ -61,20 +62,22 @@ class StatsPredictor:
         Predict stats using the transformer model object
 
         """
-        self.model(input_data, torch.zeros(6, 12, 12))
+        return d.destandardize(self.model(input_data, torch.zeros(72, 12, 12))[-1])
         ## FIX THIS
     
-    def postprocessing(self):
+    def postprocessing(self, output, player_name):
         """
         Apply post-processing on prediction values
 
         """
-        pass
+        if player_name not in self.prediction:
+            self.prediction[player_name] = {'MP': output[:,0].detach().tolist(),'FGM': output[:,1].detach().tolist(),'FGA': output[:,2].detach().tolist(),'FTM': output[:,3].detach().tolist(),
+                                            'FTA': output[:,4].detach().tolist(), 'REB': output[:,5].detach().tolist(),'AST': output[:,6].detach().tolist(),'STL': output[:,7].detach().tolist(),
+                                            'BLK': output[:,8].detach().tolist(),'TOV': output[:,9].detach().tolist(),'PF': output[:,10].detach().tolist(),'PTS': output[:,11].detach().tolist()}
     
     def compute_prediction(self):
         """
         Combine preprocessing, predict and postprocessing
-        and return JSON object with response
         
         """
         pass
