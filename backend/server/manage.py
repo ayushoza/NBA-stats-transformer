@@ -2,7 +2,7 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-
+from apps.ml.stats_prediction.training_final1 import TransformerModel, PositionalEncoding
 
 def main():
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'server.settings')

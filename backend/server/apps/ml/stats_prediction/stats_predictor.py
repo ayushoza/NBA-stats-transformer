@@ -5,8 +5,43 @@ import numpy as np
 import pandas as pd
 from nba_api.stats.static import players
 from nba_api.stats.endpoints import playergamelog
-import destandardize as d
-import standardize as s
+import torch.nn as nn
+import os
+
+here = os.path.dirname(os.path.abspath(__file__))
+
+filename = os.path.join(here, "transformer_model.joblib")
+
+std = torch.Tensor([9.49077602, 2.49329645, 5.03377988, 1.76282567, 2.21402973, 2.97681828,
+                    2.14723644, 0.6380834,  0.64613585, 0.99951063, 0.92877199, 6.6417578])
+mean = torch.Tensor([25.60003559,  4.29149587,  9.21989404,  2.16928589,  2.85579326,  4.67167195,
+                     2.49971274,  0.86798461,  0.53945552,  1.58682799,  2.31876199, 11.31548302])
+
+
+def destandardize(output):
+    """
+    Destandardize prediction to training data mean and standard deviation.
+    
+    * If any points are <0, then set to 0.
+
+    """
+    relu = nn.ReLU()
+    d = relu((output * std) + mean)
+    rounded = (d * 10).round() / 10
+    return rounded
+
+def standardize(input_stats):
+    """
+    Standardize prediction to training data mean and standard deviation.
+    
+    * If any points are <0, then set to 0.
+
+    """
+    relu = nn.ReLU()
+    s = relu((input_stats - mean) / std)
+    rounded = (s * 10).round() / 10
+    return rounded
+
 
 
 class StatsPredictor:
@@ -15,7 +50,7 @@ class StatsPredictor:
         Load preprocessing objects and Transformer object
 
         """
-        self.model = joblib.load("transformer_model.joblib")
+        self.model = joblib.load(filename)
         self.active_player_dict = players.get_active_players()
         self.inputs = []
         self.current_input = None
@@ -66,14 +101,14 @@ class StatsPredictor:
             season1 = torch.tensor(game_to_month(self.current_input['id'], self.seasons[1]).values)
             input_stats = torch.cat((season0, season1))
 
-        return s.standardize(input_stats)
+        return standardize(input_stats)
 
     def predict(self, input_data):
         """
         Predict stats using the transformer model object
 
         """
-        return d.destandardize(self.model(torch.unsqueeze(input_data.float(),0), torch.zeros(6, 12, 12))[-1])
+        return destandardize(self.model(torch.unsqueeze(input_data.float(),0), torch.zeros(6, 12, 12))[-1])
         # FIX THIS
 
     def postprocessing(self, output, player_name):
