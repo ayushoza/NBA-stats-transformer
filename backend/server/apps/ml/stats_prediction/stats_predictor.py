@@ -117,9 +117,9 @@ class StatsPredictor:
 
         """
         if player_name not in self.prediction:
-            self.prediction[player_name] = {'MP': output[:, 0].detach().tolist(), 'FGM': output[:, 1].detach().tolist(), 'FGA': output[:, 2].detach().tolist(), 'FTM': output[:, 3].detach().tolist(),
-                                            'FTA': output[:, 4].detach().tolist(), 'REB': output[:, 5].detach().tolist(), 'AST': output[:, 6].detach().tolist(), 'STL': output[:, 7].detach().tolist(),
-                                            'BLK': output[:, 8].detach().tolist(), 'TOV': output[:, 9].detach().tolist(), 'PF': output[:, 10].detach().tolist(), 'PTS': output[:, 11].detach().tolist()}
+            self.prediction[player_name] = {'Player': player_name, 'Minutes Played': output[:, 0].detach().tolist(), 'Field Goals Made': output[:, 1].detach().tolist(), 'Field Goals Attempted': output[:, 2].detach().tolist(), 'Free Throws Made': output[:, 3].detach().tolist(),
+                                            'Free Throws Attempted': output[:, 4].detach().tolist(), 'Rebounds': output[:, 5].detach().tolist(), 'Assists': output[:, 6].detach().tolist(), 'Steals': output[:, 7].detach().tolist(),
+                                            'Blocks': output[:, 8].detach().tolist(), 'Turnovers': output[:, 9].detach().tolist(), 'Personal Fouls': output[:, 10].detach().tolist(), 'Points': output[:, 11].detach().tolist()}
         return self.prediction[player_name]
 
     def compute_prediction(self, input_data):
